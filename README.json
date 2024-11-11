@@ -1,0 +1,11 @@
+{
+  "name": "mm",
+  "description": "Memory management.",
+  "authors": [{
+    "name": "Shi Lei",
+    "email": "shi_lei@massclouds.com"
+  }],
+  "keywords": ["mm", "monolithic"],
+  "repo": "shilei-massclouds/mm",
+  "doc_url": "https://github.com/shilei-massclouds/mm/blob/main/README.md"
+}
