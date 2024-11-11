@@ -9,10 +9,10 @@ use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use core::cell::OnceCell;
 use axfile::fops::File;
-use axhal::paging::pgd_alloc;
-use axhal::paging::MappingFlags;
-use axhal::paging::PageTable;
-use axhal::paging::PagingResult;
+use page_table::paging::pgd_alloc;
+use page_table::paging::MappingFlags;
+use page_table::paging::PageTable;
+use page_table::paging::PagingResult;
 use axhal::mem::virt_to_phys;
 use axtype::PAGE_SIZE;
 use core::sync::atomic::AtomicUsize;
@@ -33,6 +33,13 @@ pub const VM_READ: usize =   0x00000001;
 pub const VM_WRITE: usize =  0x00000002;
 pub const VM_EXEC: usize =   0x00000004;
 pub const VM_SHARED: usize = 0x00000008;
+pub const VM_MAYREAD : usize = 0x00000010;
+pub const VM_MAYWRITE: usize = 0x00000020;
+pub const VM_MAYEXEC : usize = 0x00000040;
+pub const VM_MAYSHARE: usize = 0x00000080;
+pub const VM_GROWSDOWN: usize = 0x00000100;
+pub const VM_LOCKED: usize = 0x00002000;
+pub const VM_SYNC: usize = 0x00800000;
 
 #[derive(Clone)]
 pub struct VmAreaStruct {
@@ -73,6 +80,9 @@ pub struct MmStruct {
 
     // Todo: temprarily record mapped (va, pa)
     pub mapped: BTreeMap<usize, usize>,
+
+    /// Pages that have PG_mlocked set
+    pub locked_vm: usize,
 }
 
 impl MmStruct {
@@ -85,6 +95,7 @@ impl MmStruct {
 
             // Todo: temprarily record mapped (va, pa)
             mapped: BTreeMap::new(),
+            locked_vm: 0,
         }
     }
 
@@ -128,6 +139,7 @@ impl MmStruct {
             brk: self.brk,
 
             mapped,
+            locked_vm: self.locked_vm,
         }
     }
 
